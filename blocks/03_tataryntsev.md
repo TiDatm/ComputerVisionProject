@@ -22,3 +22,8 @@
 ### Reinforcement learning
 - [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
 - [OpenAI Spinning Up: kinds of RL algorithms](https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html)
+
+### Imitation learning
+- [DAgger](https://arxiv.org/abs/1011.0686)
+- [Deep Drone Acrobatics](https://arxiv.org/abs/2006.05768)
+- [Video: Deep Drone Acrobatics](https://youtu.be/2N_wKXQ6MXA)
