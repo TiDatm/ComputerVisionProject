@@ -10,12 +10,12 @@ How to make a model trained in simulation work on a real drone.
 
 ## Research questions
 
-- [ ] What exactly is the sim-to-real gap for a vision-based drone?
-- [ ] How did Swift cross it? Check in the Nature paper, not in retellings.
-- [ ] Which adaptation methods use a little real data, and how much do they need?
-- [ ] How are digital twins of real places built from photos and video?
-- [ ] Is there a way around a hand-built simulator altogether?
-- [ ] What fits in 3 slides, and what do we leave out?
+- [x] What exactly is the sim-to-real gap for a vision-based drone?
+- [x] How did Swift cross it? Check in the Nature paper, not in retellings.
+- [x] Which adaptation methods use a little real data, and how much do they need?
+- [x] How are digital twins of real places built from photos and video?
+- [x] Is there a way around a hand-built simulator altogether?
+- [ ] What fits in 3 slides, and what do we leave out? (draft below, to agree with the team)
 
 ## Sim-to-real gap
 
@@ -65,7 +65,26 @@ Numbers above come from the papers' abstracts; check the tables before putting t
 
 ## Beyond simulators
 
+World models: instead of a simulator written by people, the model learns how the world behaves from real video.
+- **JEPA idea (LeCun, 2022, "A Path Towards Autonomous Machine Intelligence"):** an agent built from parts that loosely mirror a brain: perception, a world model, a cost (what is good or bad), short-term memory and an actor. The world model predicts the next moment in a compressed form (embeddings), not every pixel, so it learns what matters and ignores noise.
+- **V-JEPA 2 (Meta, June 2025):** a 1.2B-parameter world model trained on video. After 62 hours of robot video it controlled a robot arm in new labs with no extra training: it imagines the outcome of candidate actions and picks the one closest to the goal image.
+- **Drone link, SkyJEPA (June 2026, under review):** a JEPA-style world model for quadrotor control with zero-shot sim-to-real transfer outdoors. The abstract does not say it uses the camera, so present it as a fresh result, not as the vision path.
+
+Limits to say out loud: V-JEPA 2 was shown on a robot arm, not a drone; drone world models are research, not products yet.
+
 ## Slide plan
+
+3 slides, about 2.5 minutes in total.
+
+1. **The gap.** Why a policy that is perfect in simulation fails in reality (looks, sensors, physics). Swift as the example: what it sees (gate corners + VIO, not raw pixels) and the residual models from a few real runs.
+2. **Closing the gap.** Three options side by side: randomize (block 2, one line), translate images (RCAN numbers), fine-tune on a little real data (Swift). Then digital twins: rebuild the real track from photos with Gaussian splatting (SOUS VIDE). Discussion: build the world by hand or reconstruct it from photos?
+3. **Next step: world models.** Learn the world from real video, no simulator (V-JEPA 2, SkyJEPA). Bridges into the conclusion on risks.
+
+Leave out: formulas, the RL algorithm itself (block 3), simulator tools (block 2), lidar-based mapping.
+
+Open questions for the team:
+- Block 1 should describe Swift as gate detection + state estimation + policy, not end-to-end pixels to control.
+- Domain randomization stays in block 2; block 4 mentions it in one line.
 
 ## Sources
 
@@ -82,3 +101,8 @@ Numbers above come from the papers' abstracts; check the tables before putting t
 - [GRaD-Nav: visual drone navigation with Gaussian radiance fields](https://arxiv.org/abs/2503.03984)
 - [Dynamics-augmented Gaussian splatting simulator for drones](https://arxiv.org/abs/2406.15149)
 - [Relightable 3DGS for agile drone flight (2026)](https://arxiv.org/abs/2602.07101)
+
+### World models
+- [LeCun, A Path Towards Autonomous Machine Intelligence (2022)](https://openreview.net/forum?id=BZ5a1r-kVsf)
+- [V-JEPA 2, Meta AI](https://ai.meta.com/vjepa/) and [benchmarks post](https://ai.meta.com/blog/v-jepa-2-world-model-benchmarks/)
+- [SkyJEPA: long-horizon world models for zero-shot sim-to-real control of quadrotors (2026)](https://arxiv.org/abs/2606.23444)
