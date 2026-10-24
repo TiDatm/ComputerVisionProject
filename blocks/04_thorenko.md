@@ -40,7 +40,28 @@ Note for the team: Swift is not an end-to-end "pixels to motors" network. Block 
 
 ## Adaptation
 
+Three ways to close the gap, from cheapest to most real data:
+- **Domain randomization:** randomize weather, textures and light so that reality looks like one more variation. Covered in block 2; here only one line as a reminder.
+- **Translate images, not the model (domain adaptation):** a network converts real camera frames into the clean "canonical" look of the simulator, so the policy always sees what it was trained on. RCAN (CVPR 2019, robot grasping): 70% success on new objects with zero real training data; with 5,000 real grasps 91%, on par with a system trained on 580,000 real grasps.
+- **Fine-tune on a little real data:** like Swift's residual models above. A few real runs correct the simulator, then training continues in the corrected simulator.
+
+Discussion point: how much real data is "enough", and who collects it safely?
+
 ## Digital twins
+
+Instead of building the virtual world by hand, rebuild a real place from photos and video:
+- **Photogrammetry:** a 3D mesh from many overlapping photos.
+- **Gaussian splatting (3DGS):** the scene is stored as millions of small coloured blobs. Renders photo-realistic views fast enough for training.
+
+Drone examples:
+- **SOUS VIDE (2025):** a simulator made of a Gaussian splat scene plus a light drone dynamics model, rendering up to ~130 fps. A small onboard network flew the real drone with no real-world fine-tuning.
+- **GRaD-Nav (2025):** trains visual navigation with RL directly inside Gaussian radiance fields.
+- **Dynamics-augmented Gaussian splatting (2024):** trained only on indoor photo-realistic data, without scene randomization, then flew multi-step outdoor routes on a real quadrotor.
+- **Relightable 3DGS (2026):** separates lighting from geometry, so one scan can be trained under sun and overcast; reports agile flight above 10 m/s with one RGB camera and no real-world fine-tuning.
+
+Keeps the team's rule: the world is built from camera images, not from laser scans.
+
+Numbers above come from the papers' abstracts; check the tables before putting them on a slide.
 
 ## Beyond simulators
 
@@ -51,3 +72,13 @@ Note for the team: Swift is not an end-to-end "pixels to motors" network. Block 
 ### Sim-to-real gap and Swift
 - [Champion-level drone racing using deep reinforcement learning, Nature 2023](https://www.nature.com/articles/s41586-023-06419-4) (open access full text: [PMC10468397](https://pmc.ncbi.nlm.nih.gov/articles/PMC10468397/))
 - [Deep Drone Acrobatics, RSS 2020](https://arxiv.org/abs/2006.05768): trained only in simulation, transfers by feeding the policy abstracted features instead of raw images (also in block 3's sources)
+
+### Adaptation
+- [Domain randomization (Tobin et al., 2017)](https://arxiv.org/abs/1703.06907) (block 2 owns this topic)
+- [RCAN: Sim-to-Real via Sim-to-Sim, CVPR 2019](https://arxiv.org/abs/1812.07252)
+
+### Digital twins
+- [SOUS VIDE: visual drone navigation policies in a Gaussian splatting simulator](https://arxiv.org/abs/2412.16346)
+- [GRaD-Nav: visual drone navigation with Gaussian radiance fields](https://arxiv.org/abs/2503.03984)
+- [Dynamics-augmented Gaussian splatting simulator for drones](https://arxiv.org/abs/2406.15149)
+- [Relightable 3DGS for agile drone flight (2026)](https://arxiv.org/abs/2602.07101)
