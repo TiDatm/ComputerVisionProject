@@ -18,3 +18,7 @@
 ### Supervised learning
 - [AlphaPilot: Autonomous Drone Racing](https://arxiv.org/abs/2005.12813)
 - [Video: 3Blue1Brown, gradient descent](https://www.3blue1brown.com/lessons/gradient-descent)
+
+### Reinforcement learning
+- [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
+- [OpenAI Spinning Up: kinds of RL algorithms](https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html)
