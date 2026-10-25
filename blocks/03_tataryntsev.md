@@ -2,6 +2,25 @@
 
 ## Supervised learning
 
+### The idea
+
+In supervised learning the model learns from examples whose correct answers are already known. We show it many pairs *(input, correct answer)*, measure how far its output is from the answer, and adjust it to be less wrong. The labeled dataset plays the role of a teacher.
+
+### Vocabulary
+
+| Term | Meaning | Drone example |
+| --- | --- | --- |
+| Input $x$ | What the model sees | A grayscale camera image |
+| Label $y$ | The correct answer for that input | For every pixel: 1 if it is a gate corner, 0 if not |
+| Model $f_\theta$ | A function with adjustable numbers | A neural network |
+| Weights $\theta$ | The adjustable numbers inside the model (millions of them) | The network's filters |
+| Prediction | What the model outputs for $x$ | For every pixel, a probability $p$ of being a corner |
+| Loss $\ell$ | One number saying how wrong a prediction is (0 = perfect) | See [What training means](#what-training-means) |
+| Training set | Examples the weights are adjusted on | Most of the labeled images |
+| Validation set | Labeled examples kept aside to check the model on unseen data | A few thousand held-out images |
+| Overfitting | The model memorizes the training set and fails on new data | Perfect on training images, misses corners on new ones |
+| Learning rate $\eta$ | How big a step each update takes | A small number, such as 0.001 |
+
 ## Fine-tuning
 
 ## Reinforcement learning
