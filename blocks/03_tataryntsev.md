@@ -65,6 +65,56 @@ The error signal is simply "prediction minus label". Squared error would add an 
 
 **Side note: the same recipe gives other losses.** If the answer is a number $y$ with Gaussian noise around the prediction $\mu$, then $-\ln \mathcal N(y;\mu,\sigma^2) = \frac{(y-\mu)^2}{2\sigma^2} + \text{const}$, so maximum likelihood becomes minimizing mean squared error.
 
+### Dice loss
+
+**The problem BCE does not solve.** Corner pixels are a tiny share of the image. Take an image with 10,000 pixels, of which 20 are corners. A model that says $p=0.002$ for every pixel, with no idea where the corners are, gets a BCE of only $\approx 0.014$. That looks excellent, because 9,980 pixels are background and it is "almost right" about all of them. BCE averages over every pixel, so the huge background drowns out the few pixels that matter.
+
+**The idea.** Ignore the background and ask a different question: *how well do the pixels we call "corner" overlap the pixels that really are corners?* Overlap is counted relative to the sizes of both groups.
+
+**The Dice coefficient for sets.** Let $A$ be the set of pixels the model calls corners and $B$ the set of true corner pixels. Then
+
+$$\mathrm{Dice}(A,B) = \frac{2\,|A\cap B|}{|A|+|B|}$$
+
+where $|A|$ is the number of pixels in $A$ and $A\cap B$ is the pixels in both sets. The factor 2 makes a perfect match give exactly 1: if $A=B$ then $2|A|/(|A|+|A|)=1$. If the sets share nothing, the score is 0.
+
+**A tiny example.** A row of 10 pixels where the true corners are pixels 3 and 4, so $|B|=2$.
+
+| The model calls corners | $\lvert A\rvert$ | Overlap $\lvert A\cap B\rvert$ | Dice |
+| --- | --- | --- | --- |
+| pixels 3, 4 (perfect) | 2 | 2 | $2\cdot2/(2+2)=1.0$ |
+| pixels 4, 5 (half right) | 2 | 1 | $2\cdot1/(2+2)=0.5$ |
+| nothing at all | 0 | 0 | $0$ |
+| all 10 pixels | 10 | 2 | $2\cdot2/(10+2)=0.33$ |
+
+Saying nothing scores 0, and shouting "everything is a corner" is also punished, because $|A|$ grows. Background pixels that the model correctly leaves out appear in neither set, so they do not count at all. That is why the large background cannot hide a failure.
+
+**From sets to a loss.** The network does not output yes/no. It outputs probabilities $p_i\in(0,1)$, and counting set members cannot be differentiated. So each count is replaced by a sum, which can be differentiated:
+
+| Set quantity | Soft version | Meaning |
+| --- | --- | --- |
+| $\lvert A\cap B\rvert$ | $\sum_i p_i y_i$ | Each true corner ($y_i=1$) adds how confident the model was there |
+| $\lvert A\rvert$ | $\sum_i p_i$ | Total "corner mass" the model predicted |
+| $\lvert B\rvert$ | $\sum_i y_i$ | Number of true corner pixels |
+
+Training minimizes a loss, and a good score should be a small loss, so we use 1 minus the score:
+
+$$L_{Dice} = 1 - \frac{2\sum_i p_i y_i}{\sum_i p_i + \sum_i y_i}$$
+
+In practice a tiny constant is added to the top and bottom so that an image without any corners does not divide 0 by 0.
+
+**Worked example 1.** $p=(0.9,0.8,0.2,0.1)$, $y=(1,1,0,0)$: $\sum p_i y_i = 0.9+0.8 = 1.7$, $\sum p_i = 2.0$, $\sum y_i = 2$. So $\mathrm{Dice}=2\cdot1.7/(2.0+2)=0.85$ and $L_{Dice}=0.15$.
+
+**Worked example 2: the know-nothing model from above.** $p=0.002$ on all 10,000 pixels, 20 true corners. Then $\sum p_i y_i = 0.002\cdot20=0.04$ and $\sum p_i=\sum y_i=20$, so $\mathrm{Dice}=2\cdot0.04/40=0.002$ and $L_{Dice}=0.998$, almost the worst possible.
+
+| Model | BCE | Dice loss |
+| --- | --- | --- |
+| Know-nothing ($p=0.002$ everywhere) | 0.014 (looks great) | 0.998 (terrible) |
+| Perfect (1 on corners, 0 elsewhere) | 0 | 0 |
+
+Dice sees the failure that BCE hides.
+
+**Why use both.** Dice handles the imbalance but its gradients are less smooth, especially early in training when predictions are poor. BCE gives smooth, clean gradients. So the two are often added together. This is the standard choice for such tasks. I could not confirm which loss Swift itself uses.
+
 ## Fine-tuning
 
 ## Reinforcement learning
