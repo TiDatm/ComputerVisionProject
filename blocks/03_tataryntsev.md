@@ -149,6 +149,19 @@ $$m_t=\beta_1 m_{t-1}+(1-\beta_1)g_t,\quad v_t=\beta_2 v_{t-1}+(1-\beta_2)g_t^2,
 
 **Worked first step.** With $g=0.5$, $\beta_1=0.9$, $\beta_2=0.999$: $m=0.05$, $v=0.00025$, $\hat m=0.5$, $\hat v=0.25$, so the step is $\eta\cdot 0.5/0.5=\eta$ (ignoring the tiny $\epsilon$). The first step has size $\eta$ whatever the gradient's scale, which makes Adam forgiving about loss scaling.
 
+### Generalization
+
+A low training loss is not enough. The model must work on images it has never seen, such as a different room or different light. Three habits protect against overfitting:
+- **Validation set:** check the loss on held-out data; if training loss keeps falling while validation loss rises, the model is memorizing.
+- **Augmentation:** randomly alter training images (rotate, change brightness, hue, contrast) so that the model sees a wider world.
+- **More and more varied data.**
+
+A model only knows the world its data showed it. That is exactly the gap block 4 deals with, when simulated images meet a real camera.
+
+### Where labels come from
+
+Labels are the bottleneck of supervised learning. They come from hand annotation (slow and costly), semi-automatic annotation (label some frames and track the labels through the video), or a simulator that produces labels for free (block 2). The model can only be as good and as broad as its labels.
+
 ## Fine-tuning
 
 ## Reinforcement learning
