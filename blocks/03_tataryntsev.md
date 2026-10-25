@@ -21,6 +21,14 @@ In supervised learning the model learns from examples whose correct answers are 
 | Overfitting | The model memorizes the training set and fails on new data | Perfect on training images, misses corners on new ones |
 | Learning rate $\eta$ | How big a step each update takes | A small number, such as 0.001 |
 
+### What training means
+
+With a dataset of $N$ pairs $(x_i, y_i)$, training looks for weights that make the average loss small. This is called empirical risk minimization:
+
+$$\min_\theta \; \frac{1}{N}\sum_{i=1}^{N} \ell\big(f_\theta(x_i),\, y_i\big)$$
+
+Read it as: "among all possible weights, pick the ones with the smallest average mistake on our examples". The task decides the loss: a number (such as a speed) uses squared error, a category uses cross-entropy, and a label for every pixel (segmentation) is a classification per pixel.
+
 ## Fine-tuning
 
 ## Reinforcement learning
