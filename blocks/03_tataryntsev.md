@@ -135,6 +135,20 @@ $$\Delta = -\eta\,\mathrm{grad}_\theta L \quad\Longrightarrow\quad \theta \lefta
 
 **Honest caveat.** For a neural network the loss is not a simple bowl, and nothing guarantees that gradient descent finds the global minimum. That it works so well in practice is partly empirical.
 
+### Backpropagation and Adam
+
+**Backpropagation** computes the gradient for every weight in one backward pass using the chain rule. For one layer $a=f(Wx+b)$ inside a network with loss $L$:
+
+$$\frac{\partial L}{\partial W} = \Big(\frac{\partial L}{\partial a}\odot f'(Wx+b)\Big)\,x^{\top}$$
+
+Each layer reuses the gradient of the layer above it, so the cost of all gradients is about that of one forward pass.
+
+**Adam** is a popular improvement on plain gradient descent. It keeps running averages of the gradient $g_t$ and of its square, corrects their startup bias, and scales the step for each weight:
+
+$$m_t=\beta_1 m_{t-1}+(1-\beta_1)g_t,\quad v_t=\beta_2 v_{t-1}+(1-\beta_2)g_t^2,\quad \hat m_t=\frac{m_t}{1-\beta_1^t},\quad \hat v_t=\frac{v_t}{1-\beta_2^t},\quad \theta_t=\theta_{t-1}-\eta\,\frac{\hat m_t}{\sqrt{\hat v_t}+\epsilon}$$
+
+**Worked first step.** With $g=0.5$, $\beta_1=0.9$, $\beta_2=0.999$: $m=0.05$, $v=0.00025$, $\hat m=0.5$, $\hat v=0.25$, so the step is $\eta\cdot 0.5/0.5=\eta$ (ignoring the tiny $\epsilon$). The first step has size $\eta$ whatever the gradient's scale, which makes Adam forgiving about loss scaling.
+
 ## Fine-tuning
 
 ## Reinforcement learning
