@@ -115,6 +115,26 @@ Dice sees the failure that BCE hides.
 
 **Why use both.** Dice handles the imbalance but its gradients are less smooth, especially early in training when predictions are poor. BCE gives smooth, clean gradients. So the two are often added together. This is the standard choice for such tasks. I could not confirm which loss Swift itself uses.
 
+### Gradient descent
+
+We now have a loss $L(\theta)$. How do we change the weights to make it smaller?
+
+**Step 1. Look locally.** Near the current weights $\theta$, a small change $\Delta$ changes the loss by about
+
+$$L(\theta+\Delta) \approx L(\theta) + \mathrm{grad}_\theta L(\theta)^{\top}\Delta$$
+
+where the gradient, written $\mathrm{grad}_\theta L$ (in books often $\nabla_\theta L$), is the list of slopes of the loss with respect to every weight. This is the first-order Taylor expansion.
+
+**Step 2. Pick the best direction.** For a fixed step length $\|\Delta\|$, the Cauchy–Schwarz inequality gives $\mathrm{grad}\,L^{\top}\Delta \ge -\|\mathrm{grad}\,L\|\,\|\Delta\|$, with equality when $\Delta$ points exactly opposite to the gradient. So the steepest local decrease is
+
+$$\Delta = -\eta\,\mathrm{grad}_\theta L \quad\Longrightarrow\quad \theta \leftarrow \theta - \eta\,\mathrm{grad}_\theta L$$
+
+**Worked example.** Take one weight $w$ and the loss $L(w)=(w-3)^2$, whose slope is $2(w-3)$. Start at $w=0$ with $\eta=0.1$. Slope $=-6$, so $w \leftarrow 0 + 0.6 = 0.6$. Next slope $=-4.8$, so $w=1.08$. It moves toward the minimum at $w=3$ in shrinking steps. With $\eta=1.1$ the steps overshoot more each time ($0 \to 6.6 \to -1.32 \to \dots$) and the loss grows. So $\eta$ must be small, because the Taylor approximation only holds close to $\theta$.
+
+**Mini-batches.** Computing the gradient over all $N$ images every step is slow. Using a random handful (a *mini-batch*) gives a noisy but cheap estimate of the same direction. This is stochastic gradient descent (SGD).
+
+**Honest caveat.** For a neural network the loss is not a simple bowl, and nothing guarantees that gradient descent finds the global minimum. That it works so well in practice is partly empirical.
+
 ## Fine-tuning
 
 ## Reinforcement learning
