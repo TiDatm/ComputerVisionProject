@@ -1,5 +1,24 @@
 # Block 3: Training methods
 
+## Contents
+
+- [Supervised learning](#supervised-learning)
+  - [The idea](#the-idea)
+  - [Vocabulary](#vocabulary)
+  - [What training means](#what-training-means)
+  - [Binary cross-entropy loss (BCE)](#binary-cross-entropy-loss-bce)
+  - [Dice loss](#dice-loss)
+  - [Gradient descent](#gradient-descent)
+  - [Backpropagation and Adam](#backpropagation-and-adam)
+  - [Generalization](#generalization)
+  - [Where labels come from](#where-labels-come-from)
+  - [Supervised learning in Swift](#supervised-learning-in-swift)
+  - [Limits](#limits)
+- [Fine-tuning](#fine-tuning)
+- [Reinforcement learning](#reinforcement-learning)
+- [Imitation learning](#imitation-learning)
+- [Sources](#sources)
+
 ## Supervised learning
 
 ### The idea
