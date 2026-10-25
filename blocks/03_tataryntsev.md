@@ -162,6 +162,16 @@ A model only knows the world its data showed it. That is exactly the gap block 4
 
 Labels are the bottleneck of supervised learning. They come from hand annotation (slow and costly), semi-automatic annotation (label some frames and track the labels through the video), or a simulator that produces labels for free (block 2). The model can only be as good and as broad as its labels.
 
+### Supervised learning in Swift
+
+Swift's gate detector is a U-Net, a network that outputs a prediction for every pixel. Here it marks the gate corners in a grayscale camera image ([Nature, 2023](https://www.nature.com/articles/s41586-023-06419-4)). The detected corners are then combined with the known track map to compute the drone's position and are fused with other sensors. Supervised learning fits because the question "where are the gate corners?" has a checkable answer.
+
+How such a detector is trained is described in the same lab's earlier [AlphaPilot paper](https://arxiv.org/abs/2005.12813): about 28,000 real images with gate-corner labels (hand and tracked), plus rotation and brightness augmentation. That was an earlier, smaller network, so these numbers illustrate the method, not Swift's exact data.
+
+### Limits
+
+Supervised learning needs a correct answer for every example. "Which motor command is best right now?" has no ground-truth label, so Swift's controller is trained with reinforcement learning instead. A supervised model also fails when the inputs differ from its training data (distribution shift) and when labels are expensive.
+
 ## Fine-tuning
 
 ## Reinforcement learning
