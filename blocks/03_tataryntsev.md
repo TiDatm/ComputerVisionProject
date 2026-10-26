@@ -15,6 +15,16 @@
   - [Supervised learning in Swift](#supervised-learning-in-swift)
   - [Limits](#limits)
 - [Fine-tuning](#fine-tuning)
+  - [The idea](#the-idea-1)
+  - [Vocabulary](#vocabulary-1)
+  - [Why it works](#why-it-works)
+  - [The math: a small step from a good start](#the-math-a-small-step-from-a-good-start)
+  - [Strategies](#strategies)
+  - [Catastrophic forgetting](#catastrophic-forgetting)
+  - [Domain shift](#domain-shift)
+  - [Fine-tuning in robotics](#fine-tuning-in-robotics)
+  - [Fine-tuning in Swift](#fine-tuning-in-swift)
+  - [Limits](#limits-1)
 - [Reinforcement learning](#reinforcement-learning)
 - [Imitation learning](#imitation-learning)
 - [Sources](#sources)
@@ -368,6 +378,11 @@ Fine-tuning needs a good pretrained model whose task is related enough to the ne
 ### Supervised learning
 - [AlphaPilot: Autonomous Drone Racing](https://arxiv.org/abs/2005.12813)
 - [Video: 3Blue1Brown, gradient descent](https://www.3blue1brown.com/lessons/gradient-descent)
+
+### Fine-tuning
+- [How transferable are features in deep neural networks? (Yosinski et al., 2014)](https://arxiv.org/abs/1411.1792)
+- [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685)
+- [Overcoming catastrophic forgetting in neural networks](https://arxiv.org/abs/1612.00796)
 
 ### Reinforcement learning
 - [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
