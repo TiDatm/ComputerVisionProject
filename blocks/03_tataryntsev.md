@@ -308,6 +308,31 @@ d\cdot r+r\cdot k=r\,(d+k)
 
 **Worked example.** For $`d=k=1000`$ and $`r=8`$ a full update has $`1{,}000{,}000`$ numbers and LoRA has $`8\cdot2000=16{,}000`$, which is $`1.6\,\%`$. These sizes are an illustration. The paper reports $`10{,}000`$ times fewer trainable parameters for GPT-3 175B (rank $`r=4`$, applied to the attention matrices only), which shrinks the saved checkpoint from 350 GB to 35 MB.
 
+### Catastrophic forgetting
+
+Plain fine-tuning optimizes only the new loss, so nothing prevents it from overwriting weights that the old task needed. Common mitigations are a low learning rate, freezing layers, replay of old data, and regularizers.
+
+**Elastic weight consolidation (EWC)** ([Kirkpatrick et al.](https://arxiv.org/abs/1612.00796)) adds a penalty for moving weights that were important for the old task A while learning the new task B:
+
+```math
+L(\theta)=L_B(\theta)+\sum_i\frac{\lambda}{2}\,F_i\,\big(\theta_i-\theta^{*}_{A,i}\big)^2
+```
+
+This is Eq. 3 of the paper. Here $`L_B`$ is the loss on task B alone, $`\theta^{*}_{A,i}`$ is weight $`i`$ after learning task A, $`F_i`$ is the diagonal of the Fisher information matrix for that weight, and $`\lambda`$ sets how important the old task is compared to the new one. The paper notes that $`F`$ is equivalent to the second derivative of the loss near a minimum and can be computed from first derivatives alone. So $`F_i`$ is large when changing weight $`i`$ quickly raises the old loss.
+
+The penalty acts like a spring pulling each weight back to its old value, stiff for important weights and loose for unimportant ones. A uniform penalty with the same coefficient for every weight would be too severe: it protects all weights equally and leaves little room to learn task B.
+
+**Worked example.** Two weights with importance $`F=(10,\;0.1)`$ and $`\lambda=1`$.
+- Moving only the important weight by $`0.5`$ costs $`\tfrac12\cdot10\cdot0.25=1.25`$.
+- Moving only the unimportant weight by $`0.5`$ costs $`\tfrac12\cdot0.1\cdot0.25=0.0125`$, which is 100 times cheaper.
+- Moving both by $`0.5`$ costs $`1.25+0.0125\approx1.26`$.
+
+So training is pushed to change the unimportant weight and leave the important one alone.
+
+### Domain shift
+
+A second danger is fitting the target data too narrowly. A model fine-tuned on a few images from one room may work there and nowhere else. The cure is the same as for any supervised model: held-out validation data and varied data (see [Generalization](#generalization)).
+
 ## Reinforcement learning
 
 ## Imitation learning
