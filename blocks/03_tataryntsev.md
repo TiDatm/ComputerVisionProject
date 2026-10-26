@@ -281,6 +281,33 @@ A small $`\eta`$ therefore keeps the weights near $`\theta_0`$, where the pretra
 
 Example: a backbone with $`1{,}000{,}000`$ weights and a head with $`1{,}000`$. Training only the head updates $`0.1\,\%`$ of the weights. These sizes are an illustration. Fewer trainable weights also means less to overfit on a small dataset.
 
+### Strategies
+
+From the least to the most change:
+
+| Strategy | What is trained | Fits when | Main risk |
+| --- | --- | --- | --- |
+| Feature extraction | A new head only; the backbone is frozen | Very little target data, similar domain | Limited adaptation |
+| Partial fine-tuning | Later layers; early layers are frozen | Small data, moderate domain gap | Choosing which layers |
+| Full fine-tuning | All weights, with a small learning rate | Enough data, or a large domain gap | Overfitting, forgetting |
+| Parameter-efficient (adapters, LoRA) | A small set of added weights; the original ones are frozen | Very large models | Extra structure to manage |
+
+**LoRA** (low-rank adaptation, [Hu et al., 2021](https://arxiv.org/abs/2106.09685)) freezes a pretrained weight matrix $`W_0`$ of size $`d\times k`$ and learns a small correction $`\Delta W`$ as the product of two thin matrices. For an input $`x`$ the layer computes
+
+```math
+h=W_0x+\Delta Wx=W_0x+BAx,\qquad B\in\mathbb{R}^{d\times r},\; A\in\mathbb{R}^{r\times k},\; r\ll\min(d,k)
+```
+
+Only $`A`$ and $`B`$ are trained. The paper starts $`A`$ from random values and $`B`$ from zero, so $`\Delta W=BA=0`$ at the beginning and training starts exactly at the pretrained model. It also scales the correction by $`\alpha/r`$, where $`\alpha`$ is a constant.
+
+**Why this saves parameters, derived.** A full update of $`W_0`$ has $`d\cdot k`$ numbers. The pair $`B,A`$ has
+
+```math
+d\cdot r+r\cdot k=r\,(d+k)
+```
+
+**Worked example.** For $`d=k=1000`$ and $`r=8`$ a full update has $`1{,}000{,}000`$ numbers and LoRA has $`8\cdot2000=16{,}000`$, which is $`1.6\,\%`$. These sizes are an illustration. The paper reports $`10{,}000`$ times fewer trainable parameters for GPT-3 175B (rank $`r=4`$, applied to the attention matrices only), which shrinks the saved checkpoint from 350 GB to 35 MB.
+
 ## Reinforcement learning
 
 ## Imitation learning
