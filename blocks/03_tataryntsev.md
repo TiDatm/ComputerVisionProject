@@ -217,6 +217,26 @@ Supervised learning needs a correct answer for every example. "Which motor comma
 
 ## Fine-tuning
 
+### The idea
+
+Training a network from scratch needs a lot of data. Often a network that was already trained on a related task exists. Fine-tuning takes it as the starting point and keeps training it on the new task, usually with a small learning rate, instead of starting from random weights. The general name for reusing knowledge from one task in another is *transfer learning*; fine-tuning is its most common form.
+
+It pays off when data for the new task is scarce, expensive or risky to collect, which describes real robot flight.
+
+### Vocabulary
+
+| Term | Meaning | Drone example |
+| --- | --- | --- |
+| Pretrained model | A model already trained on some task | A policy trained in a simulator |
+| Source task / target task | What it was trained on / what we want to use it for | Simulated flight / real flight |
+| Backbone | The early layers that extract general features | The first layers of a vision network |
+| Head | The last layers that produce the task-specific output | The last layers of the detector, which output the corner map |
+| Frozen weights | Weights that are not updated during training | A detector kept fixed while the policy trains |
+| Domain shift (domain gap, distribution shift) | The target data differs systematically from the source data | Simulated images versus real camera images |
+| Catastrophic forgetting | Training on the new task overwrites what the model knew about the old one | A detector that gets worse on the old track after training on a new one |
+| Replay | Mixing some old data into the new training | Old images kept in every batch |
+| Fisher information $`F_i`$ | A number saying how much the loss reacts when weight $`i`$ changes, so how important that weight is | See [Catastrophic forgetting](#catastrophic-forgetting) |
+
 ## Reinforcement learning
 
 ## Imitation learning
