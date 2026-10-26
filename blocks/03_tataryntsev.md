@@ -333,6 +333,27 @@ So training is pushed to change the unimportant weight and leave the important o
 
 A second danger is fitting the target data too narrowly. A model fine-tuned on a few images from one room may work there and nowhere else. The cure is the same as for any supervised model: held-out validation data and varied data (see [Generalization](#generalization)).
 
+### Fine-tuning in robotics
+
+Three typical forms (my grouping, not a standard classification):
+1. Fine-tune a perception network on a small set of real labeled images after training it on simulated ones (supervised).
+2. Fine-tune a policy directly on the real robot with reinforcement learning. Data is scarce and crashes damage hardware, so this is rare.
+3. Fine-tune a policy in a simulator that has been corrected with real data. This is the form Swift uses.
+
+### Fine-tuning in Swift
+
+Swift's control policy is first trained with $`1\times10^{8}`$ simulated interactions in a plain simulator, which takes about 50 minutes. It is then trained for $`2\times10^{7}`$ more interactions in a simulator that was corrected with real flight data: three rollouts, about 50 seconds of flight ([Nature, 2023](https://www.nature.com/articles/s41586-023-06419-4)). Only the control policy is updated, and the weights of the gate-detection network are kept constant. So this is *reinforcement-learning* fine-tuning, not "retrain a classifier on a few labeled images".
+
+The real data does not train the policy directly. It is used to fit two small residual models that are added to the simulator: one for the drift of the drone's state estimate from visual-inertial odometry (Gaussian processes), and one for the acceleration that the simulator's physics misses (k-nearest-neighbour regression with $`k=5`$). The policy then keeps learning inside this corrected simulator. How those models are fitted belongs to block 4. This block covers how the policy learns, which is the reinforcement learning section below.
+
+Swift is not a zero-shot system. According to my reading of the paper, the baselines trained only in the idealized simulator and deployed without adaptation failed to complete even a single lap, which is why the fine-tuning step matters.
+
+Swift does not use LoRA or forgetting regularizers as far as I found. I did not find its fine-tuning learning rate or whether the optimizer state was reset, so I don't state them.
+
+### Limits
+
+Fine-tuning needs a good pretrained model whose task is related enough to the new one. It can forget the old task, it can overfit a small target set, and it does not fix a large mismatch between source and target by itself.
+
 ## Reinforcement learning
 
 ## Imitation learning
