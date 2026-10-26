@@ -237,6 +237,50 @@ It pays off when data for the new task is scarce, expensive or risky to collect,
 | Replay | Mixing some old data into the new training | Old images kept in every batch |
 | Fisher information $`F_i`$ | A number saying how much the loss reacts when weight $`i`$ changes, so how important that weight is | See [Catastrophic forgetting](#catastrophic-forgetting) |
 
+### Why it works
+
+Networks trained on images learn in layers: early layers pick up general features such as edge-like filters and colour patches, and later layers become specific to the task. General features are useful for many tasks, so they are worth keeping, and only the specific part needs to be adapted.
+
+[Yosinski et al. (2014)](https://arxiv.org/abs/1411.1792) tested this on ImageNet. They split its classes into two halves, A and B, trained a network on each, and copied the first $`n`$ layers of the A-network into a new B-network, either frozen or fine-tuned. Their findings:
+- The first layers transfer almost perfectly (they learn edge and colour filters), while higher layers transfer worse, especially between dissimilar tasks.
+- Copying and then fine-tuning ended 1.6 % *better* than training on B directly, even after long fine-tuning.
+
+### The math: a small step from a good start
+
+Fine-tuning is ordinary training (see [Gradient descent](#gradient-descent)) with two changes: the starting weights are the pretrained ones, $`\theta_0=\theta_{\text{pre}}`$, and the loss $`L_{\text{target}}`$ is computed on the target data. The update rule is the same:
+
+```math
+\theta_{t+1}=\theta_t-\eta\,\mathrm{grad}_\theta L_{\text{target}}(\theta_t)
+```
+
+**Why a small learning rate matters, derived.** The following holds for plain gradient descent.
+
+**Step 1. Total movement.** Adding up the first $`T`$ updates, everything in between cancels:
+
+```math
+\theta_T-\theta_0=-\eta\sum_{t=0}^{T-1}\mathrm{grad}_\theta L_{\text{target}}(\theta_t)
+```
+
+**Step 2. Bound its size.** The length of a sum is at most the sum of the lengths (the triangle inequality), so
+
+```math
+\lVert\theta_T-\theta_0\rVert\le\eta\sum_{t=0}^{T-1}\lVert\mathrm{grad}_\theta L_{\text{target}}(\theta_t)\rVert
+```
+
+The weights cannot move farther from the pretrained solution than $`\eta`$ times the total size of the gradients.
+
+**Worked example.** Suppose each gradient has length about 2 and we train for $`T=100`$ steps. With $`\eta=0.001`$ the weights move by at most $`0.001\cdot100\cdot2=0.2`$. With $`\eta=0.1`$ the bound is $`20`$, a hundred times larger. This is only an upper bound, but it shows how the learning rate sets the size of the region where the weights can end up.
+
+A small $`\eta`$ therefore keeps the weights near $`\theta_0`$, where the pretrained features still work. A large $`\eta`$ lets the first noisy gradients throw them far away, and the benefit of pretraining is lost.
+
+**Freezing.** Split the weights into frozen ones $`\theta_{\text{fix}}`$ and trainable ones $`\theta_{\text{tr}}`$, and update only the second group:
+
+```math
+\theta_{\text{tr}}\leftarrow\theta_{\text{tr}}-\eta\,\mathrm{grad}_{\theta_{\text{tr}}}L_{\text{target}},\qquad\theta_{\text{fix}}\ \text{unchanged}
+```
+
+Example: a backbone with $`1{,}000{,}000`$ weights and a head with $`1{,}000`$. Training only the head updates $`0.1\,\%`$ of the weights. These sizes are an illustration. Fewer trainable weights also means less to overfit on a small dataset.
+
 ## Reinforcement learning
 
 ## Imitation learning
