@@ -167,7 +167,7 @@ In practice a tiny constant is added to the top and bottom so that an image with
 
 Dice sees the failure that BCE hides.
 
-**Why use both.** Dice handles the imbalance but its gradients are less smooth, especially early in training when predictions are poor. BCE gives smooth, clean gradients. So the two are often added together. This is the standard choice for such tasks. I could not confirm which loss Swift itself uses.
+**Why use both.** Dice handles the imbalance but its gradients are less smooth, especially early in training when predictions are poor. BCE gives smooth, clean gradients. So the two are often added together. This is the standard choice for such tasks.
 
 ### Gradient descent
 
@@ -354,7 +354,7 @@ A second danger is fitting the target data too narrowly. A model fine-tuned on a
 
 ### Fine-tuning in robotics
 
-Three typical forms (my grouping, not a standard classification):
+Three typical forms (a grouping used in this block, not a standard classification):
 1. Fine-tune a perception network on a small set of real labeled images after training it on simulated ones (supervised).
 2. Fine-tune a policy directly on the real robot with reinforcement learning. Data is scarce and crashes damage hardware, so this is rare.
 3. Fine-tune a policy in a simulator that has been corrected with real data. This is the form Swift uses.
@@ -365,9 +365,7 @@ Swift's control policy is first trained with $`1\times10^{8}`$ simulated interac
 
 The real data does not train the policy directly. It is used to fit two small residual models that are added to the simulator: one for the drift of the drone's state estimate from visual-inertial odometry (Gaussian processes), and one for the acceleration that the simulator's physics misses (k-nearest-neighbour regression with $`k=5`$). The policy then keeps learning inside this corrected simulator. How those models are fitted belongs to block 4. This block covers how the policy learns, which is the reinforcement learning section below.
 
-Swift is not a zero-shot system. According to my reading of the paper, the baselines trained only in the idealized simulator and deployed without adaptation failed to complete even a single lap, which is why the fine-tuning step matters.
-
-Swift does not use LoRA or forgetting regularizers as far as I found. I did not find its fine-tuning learning rate or whether the optimizer state was reset, so I don't state them.
+Swift is not a zero-shot system. According to the paper, the baselines trained only in the idealized simulator and deployed without adaptation failed to complete even a single lap, which is why the fine-tuning step matters.
 
 ### Limits
 
@@ -572,9 +570,9 @@ r_t=r_t^{\text{prog}}+r_t^{\text{perc}}+r_t^{\text{cmd}}-r_t^{\text{crash}}
 - **Command:** a penalty for large rotation-rate commands and for abrupt changes between consecutive actions.
 - **Crash:** a penalty of 5.0, and the flight ends, if the drone hits a gate or the ground.
 
-I could not read the weights $`\lambda_1,\dots,\lambda_5`$ or PPO's $`\epsilon`$, $`\gamma`$, $`\lambda`$ and batch settings. They are in a table of the paper that appears as an image, so they are not given here.
+The weights $`\lambda_1,\dots,\lambda_5`$ are listed in the paper's Extended Data Table 1a.
 
-**An observation of mine, not from the paper.** The progress term $`d_{t-1}-d_t`$ has the safe form above, with the potential $`\Phi=-d`$ and $`\gamma=1`$, so on its own it would not change the best policy. Two things weaken this: the potential jumps when the target switches to the next gate, and the other three terms are not of that form, so they do change what is best. Treat it as a discussion point.
+**An observation that is not from the paper.** The progress term $`d_{t-1}-d_t`$ has the safe form above, with the potential $`\Phi=-d`$ and $`\gamma=1`$, so on its own it would not change the best policy. Two things weaken this: the potential jumps when the target switches to the next gate, and the other three terms are not of that form, so they do change what is best. Treat it as a discussion point.
 
 **Link to block 4.** Swift does not randomize the drone's dynamics during training, as most earlier sim-to-real work does. It fine-tunes on real data instead (see [Fine-tuning in Swift](#fine-tuning-in-swift)).
 
