@@ -388,6 +388,88 @@ The difference from supervised learning: there, every example comes with the cor
 | Advantage $`A`$ | How much better an action was than expected | A sharp turn that paid off |
 | On-policy | Learning only from data made by the current policy | Fresh simulated flights |
 
+### Return
+
+The agent should not chase the next reward but the whole future. So we add up all the future rewards, counting each step further away a little less, by a factor $`\gamma`$ each time:
+
+```math
+G_t=r_t+\gamma\,r_{t+1}+\gamma^{2}\,r_{t+2}+\dots
+```
+
+Why discount? A reward now is more certain than one far away, and it keeps the sum finite when episodes are long.
+
+**A useful rewriting.** Take $`\gamma`$ out of every term after the first:
+
+```math
+G_t=r_t+\gamma\big(r_{t+1}+\gamma\,r_{t+2}+\dots\big)=r_t+\gamma\,G_{t+1}
+```
+
+So the return is "the reward now plus the discounted return from the next step". This is how it is computed in practice, from the end backwards. **Worked example.** Three rewards of 1 with $`\gamma=0.9`$: $`G_2=1`$, $`G_1=1+0.9\cdot1=1.9`$, $`G_0=1+0.9\cdot1.9=2.71`$.
+
+The goal is to find policy weights $`\theta`$ for which the *average* return $`J(\theta)`$ is as large as possible.
+
+### Policy gradient
+
+**The intuition.** Try an action. If things went well, make that action more likely next time. If they went badly, make it less likely. The formula below says exactly this, and the derivation shows why it works.
+
+**Step 1. The simplest case.** Take one decision with no future. The policy picks action $`a`$ with probability $`\pi_\theta(a)`$ and the reward is $`R(a)`$. The average reward is
+
+```math
+J(\theta)=\sum_a\pi_\theta(a)\,R(a)
+```
+
+and its slope with respect to the weights is $`\mathrm{grad}_\theta J=\sum_a\mathrm{grad}_\theta\pi_\theta(a)\,R(a)`$. We cannot compute this sum for a real drone, because there are far too many possible actions and outcomes. We want something we can estimate by *trying* actions.
+
+**Step 2. A rewriting trick.** For a fixed action $`a`$, the probability $`\pi_\theta(a)`$ is a function of the weights $`\theta`$. The chain rule says that the slope of the logarithm of a function is the slope of the function divided by the function itself:
+
+```math
+\mathrm{grad}_\theta\ln\pi_\theta(a)=\frac{\mathrm{grad}_\theta\,\pi_\theta(a)}{\pi_\theta(a)}
+```
+
+Multiply both sides by $`\pi_\theta(a)`$:
+
+```math
+\mathrm{grad}_\theta\,\pi_\theta(a)=\pi_\theta(a)\;\mathrm{grad}_\theta\ln\pi_\theta(a)
+```
+
+*Check.* For the policy $`\pi_\theta(1)=\sigma(\theta)`$ at $`\theta=0`$: the left side is $`\sigma'(0)=0.25`$, and the right side is $`0.5\cdot(1-0.5)=0.25`$.
+
+Now put this into the sum from Step 1:
+
+```math
+\mathrm{grad}_\theta J=\sum_a\mathrm{grad}_\theta\,\pi_\theta(a)\,R(a)=\sum_a\pi_\theta(a)\;\mathrm{grad}_\theta\ln\pi_\theta(a)\;R(a)
+```
+
+Each term is now multiplied by $`\pi_\theta(a)`$, the probability of picking $`a`$. A sum weighted by probabilities is an average, so
+
+```math
+\mathrm{grad}_\theta J=\mathbb{E}_{a\sim\pi}\Big[\mathrm{grad}_\theta\ln\pi_\theta(a)\;R(a)\Big]
+```
+
+An average can be estimated by sampling: try an action, see its reward, and move the weights along $`\mathrm{grad}_\theta\ln\pi_\theta(a)\cdot R(a)`$. The direction $`\mathrm{grad}_\theta\ln\pi_\theta(a)`$ is the one that makes that action more likely, and $`R(a)`$ says how strongly to push: a high reward pushes toward the action, a negative one pushes away.
+
+**Worked example.** A policy picks action 1 with probability $`p=\sigma(\theta)`$ (the sigmoid of its single weight) and action 0 otherwise. The reward is 1 for action 1 and 0 for action 0, so $`J=p`$ and the true slope is $`p(1-p)`$, which is $`0.25`$ at $`\theta=0`$ ($`p=0.5`$). The slopes of the log-probabilities are $`\mathrm{grad}\ln\pi(1)=1-p=0.5`$ and $`\mathrm{grad}\ln\pi(0)=-p=-0.5`$. The formula gives $`0.5\cdot0.5\cdot1+0.5\cdot(-0.5)\cdot0=0.25`$, the same number.
+
+**Step 3. Many steps.** A flight is a long sequence of decisions, and the environment's physics sits in between. The same argument works for the whole sequence. The probability of a whole trajectory is a *product* of policy terms $`\pi_\theta(a_t\mid s_t)`$ and environment terms. The log turns the product into a sum, and the environment terms do not depend on $`\theta`$, so their slope is zero. Only the policy terms remain:
+
+```math
+\mathrm{grad}_\theta J=\mathbb{E}\Big[\sum_t\mathrm{grad}_\theta\ln\pi_\theta(a_t\mid s_t)\;G_t\Big]
+```
+
+Here $`G_t`$ replaces the single reward, because an action only affects rewards *after* it. We never need a model of the physics, only samples. This is why the method is called *model-free*.
+
+**Step 4. Compare with what was expected.** If every flight scores around 100, all actions look "good" and the push is noisy. Better to subtract a typical value $`b(s)`$ first. This does not change the average direction, because the average of the log-slope is zero:
+
+```math
+\mathbb{E}_{a\sim\pi}\big[\mathrm{grad}\ln\pi(a\mid s)\big]=\sum_a\mathrm{grad}\,\pi(a\mid s)=\mathrm{grad}\sum_a\pi(a\mid s)=\mathrm{grad}\,1=0
+```
+
+so subtracting $`b(s)`$ only removes noise. The natural choice is the value $`V(s)`$. Then $`G_t-V(s_t)`$ is the advantage $`\hat A_t`$, meaning "how much better than expected":
+
+```math
+\mathrm{grad}_\theta J=\mathbb{E}\Big[\sum_t\mathrm{grad}_\theta\ln\pi_\theta(a_t\mid s_t)\;\hat A_t\Big]
+```
+
 ## Imitation learning
 
 ## Sources
