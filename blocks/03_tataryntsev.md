@@ -526,6 +526,20 @@ L=\mathbb{E}_t\Big[L^{CLIP}_t(\theta)-c_1\big(V_\theta(s_t)-V^{\text{target}}_t\
 
 **Other algorithm families.** PPO belongs to the *policy-optimization* family: it improves the policy directly and learns from fresh data, which makes it stable but data-hungry. *Q-learning* methods (such as DQN) learn the value of each action and can reuse old data, but are less stable. *Model-based* methods learn a model of the environment and plan with it, which can save data but exploits the model's errors ([OpenAI Spinning Up overview](https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html)).
 
+### Reward design
+
+The reward is the only teacher, so designing it is much of the work. A *sparse* reward, for example only the final lap time, is true to the goal but gives almost no feedback along the way. A *shaped* reward adds hints such as progress toward the next gate, so the agent gets feedback at every step. The risk: the agent optimizes what you *wrote*, not what you *meant*. [Ng, Harada and Russell (1999)](https://andrewng.org/publications/policy-invariance-under-reward-transformations-theory-and-application-to-reward-shaping) describe a simulated bicycle rewarded for making progress toward a goal but not punished for moving away. It learned to ride in small circles near the start, collecting the reward again and again.
+
+**A safe kind of hint.** Their Theorem 1 says that adding to the reward a term of the form
+
+```math
+F(s,s')=\gamma\,\Phi(s')-\Phi(s)
+```
+
+for any function $`\Phi`$ of the state (a "potential", for example minus the distance to the goal) does not change which policy is best. The paper also shows that, without more knowledge of the environment, this form is the *only* safe one.
+
+**Why it is safe, for $`\gamma=1`$.** Suppose the agent goes round a loop $`s_1\to s_2\to s_1`$. The hints add up to $`F(s_1,s_2)+F(s_2,s_1)=\big(\Phi(s_2)-\Phi(s_1)\big)+\big(\Phi(s_1)-\Phi(s_2)\big)=0`$. Whatever is gained going one way is lost coming back, so going in circles earns nothing. Over any path the hints add up to just $`\Phi(\text{end})-\Phi(\text{start})`$, which does not depend on the route. The bicycle's "progress" reward was not of this form, which is why it could be exploited.
+
 ## Imitation learning
 
 ## Sources
