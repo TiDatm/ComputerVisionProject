@@ -607,6 +607,34 @@ There is one twist compared with the supervised learning above. In a control pro
 | Behavior cloning | Train once on a fixed set of demonstrations | See [Behavior cloning](#behavior-cloning) |
 | DAgger | Let the student act, have the expert label what it visited, retrain, repeat | See [DAgger](#dagger) |
 
+### Behavior cloning
+
+**Step 1. The data.** Run the expert and record pairs $`(s,a^{*})`$, where $`a^{*}=\pi^{*}(s)`$. The student does not see the state $`s`$ itself but only the observation $`o(s)`$, and must produce the expert's action from it.
+
+**Step 2. A probability model.** Let the student output the *mean* of a Gaussian distribution over actions, with a fixed spread $`\sigma`$. The probability density it gives to the expert's action is
+
+```math
+\mathcal N\big(a^{*};\,\pi_\theta(o),\,\sigma^{2}\big)\ \propto\ \exp\!\Big(-\frac{\lVert a^{*}-\pi_\theta(o)\rVert^{2}}{2\sigma^{2}}\Big)
+```
+
+**Step 3. Maximum likelihood.** As in the [BCE derivation](#binary-cross-entropy-loss-bce), choose the weights that make the observed expert actions most probable. Take the logarithm and flip the sign to get a loss:
+
+```math
+-\ln\mathcal N\big(a^{*};\,\pi_\theta(o),\,\sigma^{2}\big)=\frac{\lVert a^{*}-\pi_\theta(o)\rVert^{2}}{2\sigma^{2}}+\text{const}
+```
+
+The constant does not depend on $`\theta`$, and the factor $`1/(2\sigma^{2})`$ only rescales the loss. So the loss of behavior cloning is the squared error, averaged over the demonstrations:
+
+```math
+L_{BC}(\theta)=\mathbb{E}_{s\sim d_{\pi^{*}}}\Big[\big\lVert\pi_\theta(o(s))-\pi^{*}(s)\big\rVert^{2}\Big]
+```
+
+**Step 4. Train.** Minimize it with gradient descent, exactly as in [Gradient descent](#gradient-descent).
+
+Note the subscript on the expectation: the states $`s`$ come from the *expert's* distribution $`d_{\pi^{*}}`$, so the student's error is measured there, and only there.
+
+**Worked example.** In some state the expert commands a thrust of $`0.8`$ and the student outputs $`0.6`$. The loss is $`(0.8-0.6)^2=0.04`$. After a training step the student outputs $`0.7`$ and the loss falls to $`0.01`$.
+
 ## Sources
 
 ### Swift (overview)
