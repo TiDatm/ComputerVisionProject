@@ -540,6 +540,39 @@ for any function $`\Phi`$ of the state (a "potential", for example minus the dis
 
 **Why it is safe, for $`\gamma=1`$.** Suppose the agent goes round a loop $`s_1\to s_2\to s_1`$. The hints add up to $`F(s_1,s_2)+F(s_2,s_1)=\big(\Phi(s_2)-\Phi(s_1)\big)+\big(\Phi(s_1)-\Phi(s_2)\big)=0`$. Whatever is gained going one way is lost coming back, so going in circles earns nothing. Over any path the hints add up to just $`\Phi(\text{end})-\Phi(\text{start})`$, which does not depend on the route. The bicycle's "progress" reward was not of this form, which is why it could be exploited.
 
+### Reinforcement learning in Swift
+
+Swift's control policy is trained with PPO in simulation ([Nature, 2023](https://www.nature.com/articles/s41586-023-06419-4)).
+
+**What it sees and does**
+- **Observation, 31 numbers:** 15 for the drone's state estimate (position, velocity, orientation), 12 for the relative positions of the next gate's four corners, and 4 for its previous action.
+- **Action, 4 numbers:** the total thrust and three rotation rates.
+
+**The networks.** PPO uses two networks: the policy (the *actor*) and the value network (the *critic*). Both are small: two layers of 128 nodes. Both are trained with Adam at a learning rate of $`3\times10^{-4}`$, and only the policy is deployed on the drone. During training the critic also receives exact position, orientation and velocity, which the policy never gets. That helps the critic judge situations better without the policy depending on information it will not have in flight.
+
+**Scale.** 100 simulated drones fly in parallel, in episodes of 1,500 steps, each reset starting at a random gate. Training takes $`1\times10^{8}`$ interactions, about 50 minutes on a workstation. The [UZH press release](https://news.uzh.ch/en/articles/media/2023/Drone-race.html) describes this as a month of simulated flight in under an hour on a desktop PC.
+
+**The reward** is a shaped reward with four parts:
+
+```math
+r_t=r_t^{\text{prog}}+r_t^{\text{perc}}+r_t^{\text{cmd}}-r_t^{\text{crash}}
+```
+
+- **Progress:** $`\lambda_1\,(d_{t-1}-d_t)`$, a reward for getting closer to the next gate ($`d`$ is the distance to its centre).
+- **Perception:** a reward for pointing the camera at the next gate. The paper's reason: seeing the gate makes the pose estimate more accurate.
+- **Command:** a penalty for large rotation-rate commands and for abrupt changes between consecutive actions.
+- **Crash:** a penalty of 5.0, and the flight ends, if the drone hits a gate or the ground.
+
+I could not read the weights $`\lambda_1,\dots,\lambda_5`$ or PPO's $`\epsilon`$, $`\gamma`$, $`\lambda`$ and batch settings. They are in a table of the paper that appears as an image, so they are not given here.
+
+**An observation of mine, not from the paper.** The progress term $`d_{t-1}-d_t`$ has the safe form above, with the potential $`\Phi=-d`$ and $`\gamma=1`$, so on its own it would not change the best policy. Two things weaken this: the potential jumps when the target switches to the next gate, and the other three terms are not of that form, so they do change what is best. Treat it as a discussion point.
+
+**Link to block 4.** Swift does not randomize the drone's dynamics during training, as most earlier sim-to-real work does. It fine-tunes on real data instead (see [Fine-tuning in Swift](#fine-tuning-in-swift)).
+
+### Limits
+
+RL needs a fast simulator and a very large number of trials. A badly designed reward gets exploited, the agent exploits simulator errors as readily as real physics, and training can be unstable. When a good expert exists, imitation learning needs no reward at all (next section).
+
 ## Imitation learning
 
 ## Sources
