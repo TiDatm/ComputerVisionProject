@@ -490,6 +490,42 @@ With $`\lambda=0`$ it is just $`\delta_t`$: smooth but dependent on the critic b
 
 **Worked example.** Rewards $`r=(1,2)`$, values $`V=(0.5,0.6)`$, value $`0`$ after the end, $`\gamma=0.99`$, $`\lambda=0.95`$. Backwards: $`\delta_1=2-0.6=1.4`$, so $`\hat A_1=1.4`$. $`\delta_0=1+0.99\cdot0.6-0.5=1.094`$, so $`\hat A_0=1.094+0.9405\cdot1.4=2.411`$.
 
+### PPO
+
+Proximal policy optimization (PPO, [Schulman et al., 2017](https://arxiv.org/abs/1707.06347)) is the algorithm Swift uses.
+
+**The problem.** The data was collected by the *old* policy, and the update formulas are only trustworthy close to it. If one update changes the policy a lot, the data no longer describes it and training can collapse. We want to improve the policy, but only in small steps.
+
+**Step 1. Measure the change.** Compare how likely the new policy finds an action to how likely the old one did:
+
+```math
+r_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}
+```
+
+If $`r_t=1`$ nothing changed, and $`r_t=1.2`$ means the action became 20 % more likely. The objective we would like to increase is $`r_t\,\hat A_t`$: make good actions more likely ($`\hat A>0`$) and bad ones less likely ($`\hat A<0`$).
+
+**Step 2. Stop rewarding big changes.** Once a good action is already, say, 20 % more likely, there is no need to push further. PPO simply cuts the benefit off outside a range $`[1-\epsilon,\,1+\epsilon]`$, with a small $`\epsilon`$ such as 0.2, and takes the smaller of the two values so it never overestimates:
+
+```math
+L^{CLIP}(\theta)=\mathbb{E}_t\Big[\min\big(r_t\hat A_t,\ \mathrm{clip}(r_t,\,1-\epsilon,\,1+\epsilon)\,\hat A_t\big)\Big]
+```
+
+**Worked example** with $`\epsilon=0.2`$, so the range is $`[0.8,\,1.2]`$ and $`\mathrm{clip}(1.4)=1.2`$:
+- **Good action** ($`\hat A=+2`$) that became 40 % more likely ($`r=1.4`$): $`\min(1.4\cdot2,\;1.2\cdot2)=\min(2.8,\,2.4)=2.4`$. The clipped value is used and has no slope, so there is no more push upward.
+- **Bad action** ($`\hat A=-2`$) that also became 40 % more likely ($`r=1.4`$): $`\min(1.4\cdot(-2),\;1.2\cdot(-2))=\min(-2.8,\,-2.4)=-2.8`$. The unclipped value is used and still has a slope, so the action is pushed back down.
+
+So the clip ignores a change only when it would make the objective look better, and a harmful change is still counted in full.
+
+**Step 3. Train both networks.** The paper combines the policy objective with a loss for the critic and a bonus $`S`$ for keeping the policy a bit random, so it keeps exploring (Eq. 9 of the paper):
+
+```math
+L=\mathbb{E}_t\Big[L^{CLIP}_t(\theta)-c_1\big(V_\theta(s_t)-V^{\text{target}}_t\big)^2+c_2\,S[\pi_\theta](s_t)\Big]
+```
+
+**The loop.** Several parallel simulators run the current policy for a number of steps. Then the objective is optimized for a few passes over that data, and the new policy becomes the "old" one. In the paper's tests on seven simulated robot-control tasks, $`\epsilon=0.2`$ worked best (average normalized score 0.82, versus 0.76 for 0.1 and 0.70 for 0.3). Those are not Swift's settings.
+
+**Other algorithm families.** PPO belongs to the *policy-optimization* family: it improves the policy directly and learns from fresh data, which makes it stable but data-hungry. *Q-learning* methods (such as DQN) learn the value of each action and can reuse old data, but are less stable. *Model-based* methods learn a model of the environment and plan with it, which can save data but exploits the model's errors ([OpenAI Spinning Up overview](https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html)).
+
 ## Imitation learning
 
 ## Sources
