@@ -26,6 +26,15 @@
   - [Fine-tuning in Swift](#fine-tuning-in-swift)
   - [Limits](#limits-1)
 - [Reinforcement learning](#reinforcement-learning)
+  - [The idea](#the-idea-2)
+  - [Vocabulary](#vocabulary-2)
+  - [Return](#return)
+  - [Policy gradient](#policy-gradient)
+  - [Advantage](#advantage)
+  - [PPO](#ppo)
+  - [Reward design](#reward-design)
+  - [Reinforcement learning in Swift](#reinforcement-learning-in-swift)
+  - [Limits](#limits-2)
 - [Imitation learning](#imitation-learning)
 - [Sources](#sources)
 
@@ -593,6 +602,8 @@ RL needs a fast simulator and a very large number of trials. A badly designed re
 
 ### Reinforcement learning
 - [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
+- [High-Dimensional Continuous Control Using Generalized Advantage Estimation](https://arxiv.org/abs/1506.02438)
+- [Policy invariance under reward transformations (Ng, Harada, Russell, 1999)](https://andrewng.org/publications/policy-invariance-under-reward-transformations-theory-and-application-to-reward-shaping)
 - [OpenAI Spinning Up: kinds of RL algorithms](https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html)
 
 ### Imitation learning
