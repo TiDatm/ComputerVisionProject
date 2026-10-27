@@ -366,6 +366,28 @@ Fine-tuning needs a good pretrained model whose task is related enough to the ne
 
 ## Reinforcement learning
 
+### The idea
+
+Think of learning to ride a bike or training a dog. Nobody gives you the correct move for every moment. You try something, see how it turns out, and slowly do more of what worked. Reinforcement learning (RL) is this idea for machines: an *agent* acts in an *environment* and gets a number called the *reward* that says how well it is going. The reward can arrive much later than the action that earned it.
+
+The loop is always the same: look at the situation, choose an action, the environment moves on and gives a reward, repeat. For a racing drone, the reward is high for getting closer to the next gate and very low for a crash.
+
+The difference from supervised learning: there, every example comes with the correct answer. Here, the agent only gets a score and has to work out for itself which of its actions caused it.
+
+### Vocabulary
+
+| Term | Meaning | Drone example |
+| --- | --- | --- |
+| State $`s`$ | The current situation | Position, speed, orientation, where the gate is |
+| Action $`a`$ | What the agent chooses | Thrust and rotation rates |
+| Reward $`r`$ | A score after each step | Positive for approaching the gate, negative for a crash |
+| Policy $`\pi_\theta(a\mid s)`$ | A function: give it a state $`s`$ and an action $`a`$, and it returns the probability of choosing $`a`$ in $`s`$. It has adjustable weights $`\theta`$ | A small neural network |
+| Return $`G_t`$ | All the rewards from step $`t`$ onward, added up | See [Return](#return) |
+| Discount $`\gamma`$ | How much less a later reward counts, $`0<\gamma\le1`$ | 0.99: a reward 100 steps away counts about 37 % |
+| Value $`V(s)`$ | The return the agent expects from state $`s`$ | "From here it usually goes well" |
+| Advantage $`A`$ | How much better an action was than expected | A sharp turn that paid off |
+| On-policy | Learning only from data made by the current policy | Fresh simulated flights |
+
 ## Imitation learning
 
 ## Sources
