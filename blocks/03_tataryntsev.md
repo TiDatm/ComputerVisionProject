@@ -582,6 +582,31 @@ RL needs a fast simulator and a very large number of trials. A badly designed re
 
 ## Imitation learning
 
+### The idea
+
+Instead of finding out by trial and error, a learner can watch someone who already knows how, like an apprentice next to a master. In imitation learning a *student* policy is trained to copy an *expert*. There is no reward to design. Every example is a pair *(situation, what the expert did there)*, so imitation learning is supervised learning where the label is the expert's action. RL learns from scoring, imitation learns from showing.
+
+This is attractive for robots for three reasons. A reward is often hard to write down, while an expert is easy to run. The training is plain supervised learning, which is stable and needs far fewer samples than RL. And in simulation it risks no hardware.
+
+The expert can be a human, a classical controller such as model-predictive control (MPC), or another trained policy. It only runs during training, so it may be slow or expensive.
+
+There is one twist compared with the supervised learning above. In a control problem the student's own actions decide which situations it meets next. The data it will face at test time therefore depends on the student itself, and this causes the main problem of imitation learning (see [Compounding error](#compounding-error)).
+
+### Vocabulary
+
+| Term | Meaning | Drone example |
+| --- | --- | --- |
+| Expert (teacher) $`\pi^{*}`$ | The policy being copied | An MPC controller that plans the maneuver |
+| Student $`\pi_\theta`$ | The policy being trained, with weights $`\theta`$ | A small neural network |
+| State $`s`$ and observation $`o(s)`$ | The full truth / what the student actually senses | Exact position and speed / camera and IMU readings |
+| Demonstration | A pair $`(s,\,a^{*})`$ with $`a^{*}=\pi^{*}(s)`$ | The drone's state and the thrust the expert chose |
+| State distribution $`d_\pi`$ | How often a policy $`\pi`$ visits each state over a flight | The places a drone following $`\pi`$ actually goes |
+| Mistake | The student's action differs from the expert's in that state | A wrong thrust command |
+| Cost $`J(\pi)`$ | The total cost over $`T`$ steps when following $`\pi`$; lower is better | Distance from the reference path, summed over the flight |
+| Privileged information | Something the expert sees that the real robot never will | The exact position and speed, available only in simulation |
+| Behavior cloning | Train once on a fixed set of demonstrations | See [Behavior cloning](#behavior-cloning) |
+| DAgger | Let the student act, have the expert label what it visited, retrain, repeat | See [DAgger](#dagger) |
+
 ## Sources
 
 ### Swift (overview)
