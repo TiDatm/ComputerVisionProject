@@ -470,6 +470,26 @@ so subtracting $`b(s)`$ only removes noise. The natural choice is the value $`V(
 \mathrm{grad}_\theta J=\mathbb{E}\Big[\sum_t\mathrm{grad}_\theta\ln\pi_\theta(a_t\mid s_t)\;\hat A_t\Big]
 ```
 
+### Advantage
+
+To subtract the value we need to know it. A second network, the *critic*, learns $`V(s)`$ by ordinary supervised regression onto the returns, so part of RL is supervised learning. The critic gives a quick estimate of how good the last action was:
+
+```math
+\delta_t=r_t+\gamma V(s_{t+1})-V(s_t)
+```
+
+Read it as: "what I got now plus what I expect next, minus what I expected before". If it is positive, things went better than expected.
+
+One step is noisy in a different way, because the critic can be wrong. *Generalized advantage estimation* (GAE, [Schulman et al.](https://arxiv.org/abs/1506.02438)) mixes the one-step estimate with longer-looking ones:
+
+```math
+\hat A_t=\sum_{l\ge0}(\gamma\lambda)^{l}\,\delta_{t+l}=\delta_t+\gamma\lambda\,\hat A_{t+1}
+```
+
+With $`\lambda=0`$ it is just $`\delta_t`$: smooth but dependent on the critic being right. With $`\lambda=1`$ it is the full return minus $`V(s_t)`$: honest but noisy. A value in between, such as 0.95, balances the two.
+
+**Worked example.** Rewards $`r=(1,2)`$, values $`V=(0.5,0.6)`$, value $`0`$ after the end, $`\gamma=0.99`$, $`\lambda=0.95`$. Backwards: $`\delta_1=2-0.6=1.4`$, so $`\hat A_1=1.4`$. $`\delta_0=1+0.99\cdot0.6-0.5=1.094`$, so $`\hat A_0=1.094+0.9405\cdot1.4=2.411`$.
+
 ## Imitation learning
 
 ## Sources
