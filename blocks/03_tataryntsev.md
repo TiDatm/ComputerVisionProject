@@ -695,6 +695,24 @@ where $`\epsilon`$ is the average mistake rate over the student's own states. Th
 
 **The catch.** The expert must be able to label *any* state the student reaches, even strange ones. A human cannot do that quickly during a flight, but an algorithm that sees the exact state can.
 
+### Privileged teacher and student
+
+In simulation the expert can be given *privileged information*: the exact state $`s`$, which a real drone never has. The student sees only what the real drone will have, the observation $`o(s)`$ such as camera and IMU data, and learns to produce the teacher's action from this poorer view. The loss is the same as before, with the student's action computed from the observation and the teacher's from the exact state:
+
+```math
+\min_\pi\ \mathbb{E}_{s\sim d_\pi}\Big[\big\lVert\pi^{*}(s)-\pi(o(s))\big\rVert\Big]
+```
+
+Because the teacher is an algorithm, it can label any state at once, so DAgger fits well. Training in simulation also risks no hardware and needs no human demonstrator.
+
+### Imitation in the Zurich drone papers
+
+Swift itself uses no imitation: its policy is trained by RL alone. The same lab uses imitation in other drone papers:
+
+- **Deep Drone Acrobatics** ([paper](https://arxiv.org/abs/2006.05768), [video](https://youtu.be/2N_wKXQ6MXA)). The expert is an MPC controller that tracks a reference trajectory and sees the exact state. The student sees only feature tracks (the motion of image keypoints) and IMU readings. It is trained with DAgger entirely in simulation: the student flies, the expert labels the visited states, and in each cycle 30 new rollouts are added and the student is retrained. To avoid crashes early on, the student's action is executed only if it is close enough to the expert's, and a random action is taken with probability 30 % to widen the set of visited states. The result flies a Power Loop, Barrel Roll and Matty Flip on a real quadrotor with accelerations up to 3g, with no fine-tuning and no human expert.
+- **Learning High-Speed Flight in the Wild** ([paper](https://arxiv.org/abs/2110.05113)). A convolutional network trained only in simulation to imitate an expert with privileged information flies through forests, snow and collapsed buildings with onboard sensing.
+- **Bootstrapping RL with Imitation** ([paper](https://arxiv.org/abs/2403.12203)). It combines both methods in three stages: an RL teacher trained on the exact state, an imitation-learned vision student, and RL fine-tuning of that student (the same idea as in [Fine-tuning](#fine-tuning)). The authors report that it handles cases where RL from scratch fails and that it outperforms imitation alone.
+
 ## Sources
 
 ### Swift (overview)
