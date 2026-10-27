@@ -36,6 +36,15 @@
   - [Reinforcement learning in Swift](#reinforcement-learning-in-swift)
   - [Limits](#limits-2)
 - [Imitation learning](#imitation-learning)
+  - [The idea](#the-idea-3)
+  - [Vocabulary](#vocabulary-3)
+  - [Behavior cloning](#behavior-cloning)
+  - [Compounding error](#compounding-error)
+  - [DAgger](#dagger)
+  - [Privileged teacher and student](#privileged-teacher-and-student)
+  - [Imitation in the Zurich drone papers](#imitation-in-the-zurich-drone-papers)
+  - [Imitation versus reinforcement learning](#imitation-versus-reinforcement-learning)
+  - [Limits](#limits-3)
 - [Sources](#sources)
 
 ## Supervised learning
@@ -752,4 +761,6 @@ The student is capped by the quality of the expert, and it can only learn from s
 ### Imitation learning
 - [DAgger](https://arxiv.org/abs/1011.0686)
 - [Deep Drone Acrobatics](https://arxiv.org/abs/2006.05768)
+- [Learning High-Speed Flight in the Wild](https://arxiv.org/abs/2110.05113)
+- [Bootstrapping Reinforcement Learning with Imitation for Vision-Based Agile Flight](https://arxiv.org/abs/2403.12203)
 - [Video: Deep Drone Acrobatics](https://youtu.be/2N_wKXQ6MXA)
