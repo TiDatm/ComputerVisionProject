@@ -656,6 +656,45 @@ The cost grows with the *square* of the horizon $`T`$. If every mistake were ind
 
 **More data does not fix it.** More demonstrations lower $`\epsilon`$, but the $`T^{2}`$ remains, because the problem is where the student is tested, not how much it saw.
 
+### DAgger
+
+**The fix.** The problem is a mismatch: the student trains on the expert's situations but is tested on its own. *DAgger* (dataset aggregation, same paper) removes the mismatch by training on the situations the student itself visits:
+
+1. Let the student fly and record the states it visits. In the first round the expert flies instead.
+2. Ask the expert what it would have done in each of those states.
+3. Add these pairs $`(s,\pi^{*}(s))`$ to the dataset.
+4. Retrain the student on the whole dataset, then repeat from step 1.
+
+In the paper's algorithm each round flies a mixture $`\pi_i=\beta_i\pi^{*}+(1-\beta_i)\hat\pi_i`$ of the expert and the current student, with $`\beta_1=1`$ and a weight on the expert that shrinks over the rounds.
+
+**A tiny picture.** A drone should stay on a line. Round 1: the expert flies, so the data contains only states close to the line. Round 2: the student flies, drifts half a metre off, a place the data has never shown, and the expert labels these states with "steer back". The next student has now seen how to recover from exactly the drift it produces itself.
+
+**Why it helps, derived.** The aim is to bound the student's cost $`J(\pi)`$ when its mistake rate $`\epsilon`$ is measured on the states *the student itself* reaches. The argument follows the proof of Theorem 2.2 in the paper.
+
+**Step 1. Hybrid policies.** Let $`\pi_{1:t}`$ be the policy that follows the student for the first $`t`$ steps and the expert after that. Then $`\pi_{1:T}`$ is the pure student and $`\pi_{1:0}`$ is the pure expert.
+
+**Step 2. A telescoping sum.** Walking from the expert to the student, one step at a time:
+
+```math
+J(\pi)-J(\pi^{*})=\sum_{t=1}^{T}\Big[J(\pi_{1:t})-J(\pi_{1:t-1})\Big]
+```
+
+**Step 3. Each term is small.** The two hybrids $`\pi_{1:t}`$ and $`\pi_{1:t-1}`$ behave identically for the first $`t-1`$ steps (both follow the student), so they reach the same state at step $`t`$. There, one takes the student's action and the other the expert's, and afterwards both follow the expert. If the two actions agree, nothing differs. If they do not, the student made a mistake, and the expert's later behavior can repair it up to an extra cost of at most $`u`$ (the cost of one wrong action followed by the expert). So the term is at most $`u`$ times the probability $`\epsilon_t`$ that the student errs at step $`t`$ in the states it reaches.
+
+**Step 4. Add them up.**
+
+```math
+J(\pi)\ \le\ J(\pi^{*})+u\sum_{t=1}^{T}\epsilon_t=J(\pi^{*})+u\,T\,\epsilon
+```
+
+where $`\epsilon`$ is the average mistake rate over the student's own states. The cost is *linear* in $`T`$. For DAgger the paper's Theorem 3.2 gives $`J(\hat\pi)\le J(\pi^{*})+uT\epsilon_N+O(1)`$, where $`\epsilon_N`$ is the loss of the best policy on the collected data.
+
+**How this relates to behavior cloning.** One wrong action can cost at most all the remaining steps, so $`u\le T`$, and the formula contains the quadratic bound as the worst case $`u=T`$. The difference is where $`\epsilon`$ is measured. Behavior cloning controls it only on the expert's states, and the student's own states can be much worse, which is why Theorem 2.1 needs the extra argument above. DAgger trains on the student's own states, so $`\epsilon`$ in the formula is exactly what it minimizes. If the expert can repair a mistake quickly, $`u`$ is small and the bound is truly linear.
+
+**Worked example.** $`T=100`$, $`\epsilon=0.01`$. If the expert can repair any mistake in one step ($`u=1`$), the bound is $`1\cdot100\cdot0.01=1`$. In the worst case $`u=T=100`$ it is $`100`$, the same as behavior cloning's bound.
+
+**The catch.** The expert must be able to label *any* state the student reaches, even strange ones. A human cannot do that quickly during a flight, but an algorithm that sees the exact state can.
+
 ## Sources
 
 ### Swift (overview)
