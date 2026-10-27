@@ -713,6 +713,20 @@ Swift itself uses no imitation: its policy is trained by RL alone. The same lab 
 - **Learning High-Speed Flight in the Wild** ([paper](https://arxiv.org/abs/2110.05113)). A convolutional network trained only in simulation to imitate an expert with privileged information flies through forests, snow and collapsed buildings with onboard sensing.
 - **Bootstrapping RL with Imitation** ([paper](https://arxiv.org/abs/2403.12203)). It combines both methods in three stages: an RL teacher trained on the exact state, an imitation-learned vision student, and RL fine-tuning of that student (the same idea as in [Fine-tuning](#fine-tuning)). The authors report that it handles cases where RL from scratch fails and that it outperforms imitation alone.
 
+### Imitation versus reinforcement learning
+
+| | Imitation (behavior cloning, DAgger) | RL (PPO) |
+| --- | --- | --- |
+| Learning signal | The expert's action in each state | A reward from the environment |
+| Needs a reward function? | No | Yes |
+| Data needed | Far less | Very large amounts |
+| Can beat the expert? | No, it is capped by the expert | Yes, bounded by the reward and the simulator |
+| Main problem | Compounding error | Reward design, sample cost |
+
+### Limits
+
+The student is capped by the quality of the expert, and it can only learn from situations that the expert can label. Plain behavior cloning breaks when small errors push the student into states it never saw. DAgger repairs this but needs an expert that can be queried on any state, which in practice means an algorithm in simulation. The drone papers above imitate algorithmic experts, not human pilots.
+
 ## Sources
 
 ### Swift (overview)
