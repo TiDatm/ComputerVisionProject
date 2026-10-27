@@ -635,6 +635,27 @@ Note the subscript on the expectation: the states $`s`$ come from the *expert's*
 
 **Worked example.** In some state the expert commands a thrust of $`0.8`$ and the student outputs $`0.6`$. The loss is $`(0.8-0.6)^2=0.04`$. After a training step the student outputs $`0.7`$ and the loss falls to $`0.01`$.
 
+### Compounding error
+
+**The intuition.** Imagine learning to drive by watching only a perfect driver. You never see what to do after drifting onto the shoulder, because the expert never goes there. At the wheel, one small slip puts you in a situation you have never seen, so the next slip is more likely, and so on. Training used the expert's situations, but at test time the student meets its *own*.
+
+**Counting it, step by step.** Let a flight have $`T`$ steps, and let each step cost 1 if the student is off course and 0 otherwise. Suppose that on states the expert visits, the student makes a mistake with probability at most $`\epsilon`$ per step.
+
+1. Before its first mistake the student is in states like the expert's, so it behaves like the expert and costs nothing.
+2. The first mistake happens at step $`t`$ with probability at most $`\epsilon`$.
+3. In the worst case the student never recovers from it, because it is now in a state it has never seen. Then every remaining step costs 1, which is $`T-t+1`$ steps.
+4. Adding over all possible $`t`$:
+
+```math
+\text{extra cost}\ \le\ \sum_{t=1}^{T}\epsilon\,(T-t+1)=\epsilon\,\big(T+(T-1)+\dots+1\big)=\epsilon\,\frac{T(T+1)}{2}\ \le\ T^{2}\epsilon
+```
+
+The cost grows with the *square* of the horizon $`T`$. If every mistake were independent and harmless, the cost would be only $`T\epsilon`$. [Ross, Gordon and Bagnell (2011)](https://arxiv.org/abs/1011.0686) prove the bound in their Theorem 2.1, $`J(\pi)\le J(\pi^{*})+T^{2}\epsilon`$, and show that it is tight: some problems really behave this way.
+
+**Worked example.** $`T=100`$ and $`\epsilon=0.01`$. With harmless independent mistakes, about $`T\epsilon=1`$ step goes wrong. With compounding, up to $`0.01\cdot5050\approx50`$ steps go wrong, and the paper's cleaner bound is $`T^{2}\epsilon=100`$, the whole flight. These are worst cases, not typical behavior.
+
+**More data does not fix it.** More demonstrations lower $`\epsilon`$, but the $`T^{2}`$ remains, because the problem is where the student is tested, not how much it saw.
+
 ## Sources
 
 ### Swift (overview)
