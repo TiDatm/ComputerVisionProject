@@ -374,7 +374,7 @@ Swift's control policy is first trained with $`1\times10^{8}`$ simulated interac
 
 The real data does not train the policy directly. It is used to fit two small residual models that are added to the simulator: one for the drift of the drone's state estimate from visual-inertial odometry (Gaussian processes), and one for the acceleration that the simulator's physics misses (k-nearest-neighbour regression with $`k=5`$). The policy then keeps learning inside this corrected simulator. How those models are fitted belongs to block 4. This block covers how the policy learns, which is the reinforcement learning section below.
 
-Swift is not a zero-shot system. According to the paper, the baselines trained only in the idealized simulator and deployed without adaptation failed to complete even a single lap, which is why the fine-tuning step matters.
+Swift is not a zero-shot system. In the paper's experiments with shifted dynamics and observations, none of the three baselines (a zero-shot policy, domain randomization, and a time-optimal trajectory tracked by model predictive control) completed even a single lap, while Swift succeeded in all settings. This is why the fine-tuning step matters.
 
 ### Limits
 
@@ -544,7 +544,7 @@ L=\mathbb{E}_t\Big[L^{CLIP}_t(\theta)-c_1\big(V_\theta(s_t)-V^{\text{target}}_t\
 
 ### Reward design
 
-The reward is the only teacher, so designing it is much of the work. A *sparse* reward, for example only the final lap time, is true to the goal but gives almost no feedback along the way. A *shaped* reward adds hints such as progress toward the next gate, so the agent gets feedback at every step. The risk: the agent optimizes what you *wrote*, not what you *meant*. [Ng, Harada and Russell (1999)](https://andrewng.org/publications/policy-invariance-under-reward-transformations-theory-and-application-to-reward-shaping) describe a simulated bicycle rewarded for making progress toward a goal but not punished for moving away. It learned to ride in small circles near the start, collecting the reward again and again.
+The reward is the only teacher, so designing it is much of the work. A *sparse* reward, for example only the final lap time, is true to the goal but gives almost no feedback along the way. A *shaped* reward adds hints such as progress toward the next gate, so the agent gets feedback at every step. The risk: the agent optimizes what you *wrote*, not what you *meant*. [Ng, Harada and Russell (1999)](https://people.eecs.berkeley.edu/~russell/papers/icml99-shaping.pdf) describe a simulated bicycle rewarded for making progress toward a goal but not punished for moving away. It learned to ride in small circles near the start, collecting the reward again and again.
 
 **A safe kind of hint.** Their Theorem 1 says that adding to the reward a term of the form
 
@@ -755,7 +755,7 @@ The student is capped by the quality of the expert, and it can only learn from s
 ### Reinforcement learning
 - [Proximal Policy Optimization](https://arxiv.org/abs/1707.06347)
 - [High-Dimensional Continuous Control Using Generalized Advantage Estimation](https://arxiv.org/abs/1506.02438)
-- [Policy invariance under reward transformations (Ng, Harada, Russell, 1999)](https://andrewng.org/publications/policy-invariance-under-reward-transformations-theory-and-application-to-reward-shaping)
+- [Policy invariance under reward transformations (Ng, Harada, Russell, 1999)](https://people.eecs.berkeley.edu/~russell/papers/icml99-shaping.pdf)
 - [OpenAI Spinning Up: kinds of RL algorithms](https://spinningup.openai.com/en/latest/spinningup/rl_intro2.html)
 
 ### Imitation learning
