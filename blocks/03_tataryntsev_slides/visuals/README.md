@@ -34,3 +34,14 @@ CC BY-SA means the credit line is required and a derived image must carry the sa
 
 - Swift, Nature 2023 overview: see the Sources section of `../../03_tataryntsev.md`.
 - Deep Drone Acrobatics demo: https://youtu.be/2N_wKXQ6MXA
+
+## Drawn for the slides
+
+| File | What it shows | Credit line | Used on |
+| --- | --- | --- | --- |
+| `formula_supervised.png`, `formula_rl.png`, `formula_ppo.png` | Formulas rendered with KaTeX (first versions of the slide images) | Own work | Replaced by the plots below, PPO one is still used on slide 4 |
+| `plots_supervised.png` | Cross-entropy loss, the loss curve for y = 1, a gradient descent picture, the weight update | Own work | Slide 1 |
+| `plots_reinforcement.png` | Return with discounted rewards, action probabilities and advantages, the policy gradient | Own work | Slide 3 |
+| `plot_finetuning_papers.png` | EWC figure and LoRA figure side by side | Kirkpatrick et al., arXiv 1612.00796, Fig. 1; Hu et al., arXiv 2106.09685, Fig. 1 | Slide 2 |
+| `deep_drone_acrobatics_fig1_photos.png` | The three photos of the paper's Fig. 1 without its caption | Kaufmann et al., RSS 2020 (arXiv 2006.05768), Fig. 1 | Slide 5 |
+| `wikimedia_rl_agent_environment_loop.png` | PNG render of the CC0 diagram above | Megajuice, Wikimedia Commons, CC0 | Not used in the current deck |
