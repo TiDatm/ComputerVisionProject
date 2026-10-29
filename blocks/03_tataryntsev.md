@@ -424,6 +424,17 @@ So the return is "the reward now plus the discounted return from the next step".
 
 The goal is to find policy weights $`\theta`$ for which the *average* return $`J(\theta)`$ is as large as possible.
 
+> **Side note: expected value $`\mathbb{E}`$.** The symbol $`\mathbb{E}[\dots]`$ means "the average of this quantity over everything that could happen, counting likely outcomes more". Two small cases:
+>
+> - A fair die: $`\mathbb{E}[\text{roll}]=1\cdot\tfrac16+2\cdot\tfrac16+\dots+6\cdot\tfrac16=3.5`$. No single roll gives 3.5; it is what many rolls average to.
+> - A bet that pays 10 with probability 0.1 and 0 with probability 0.9: $`\mathbb{E}=10\cdot0.1+0\cdot0.9=1`$.
+>
+> For the drone, say the policy turns left with probability 0.7 (advantage $`+2`$) and right with probability 0.3 (advantage $`-1`$). Then $`\mathbb{E}[A]=0.7\cdot2+0.3\cdot(-1)=1.1`$.
+>
+> This is the usual expected value from probability: $`\mathbb{E}[X]=\sum_x p(x)\,x`$. The *expected return* is $`\mathbb{E}[G]=J(\theta)`$. The policy gradient below is the average of a different quantity, $`\mathrm{grad}\ln\pi\cdot A`$, and the result equals the slope of that expected return.
+>
+> A drone cannot list every possible action and outcome, so it *samples*: it flies many steps, computes the quantity inside the brackets for each, and averages. By the law of large numbers this sample average gets close to $`\mathbb{E}`$ as the number of steps grows. One step is partly luck, the average shows what really works. The same symbol appears below in the policy gradient, the advantage and the PPO objective, and later in behavior cloning (there the subscript says where the states come from).
+
 ### Policy gradient
 
 **The intuition.** Try an action. If things went well, make that action more likely next time. If they went badly, make it less likely. The formula below says exactly this, and the derivation shows why it works.
