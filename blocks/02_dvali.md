@@ -16,3 +16,8 @@ Motion blurr
 Rolling shatter (sometimes, it basically is tied to the way the images are processed on some cameras that make it distored in specific way when moving)
 Shake
 Latency
+
+Slides text:
+
+Давайте поговримо про симуляцію. 
+Спочатку задамось питанням, навіщо нам взагалі симуляція? Нам потрібні дані, В ідеалі або дані які відповідаютть діям дрону в реальному часі, або наперед оброблені дані які ми використаємо для навчання
