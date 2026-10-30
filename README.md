@@ -24,4 +24,4 @@ The table follows the order of the talk. That's why the file numbers for trainin
 
 - `README.md`: this file
 - `blocks/`: one notes file per person, each committed by its author
-- `slides.pdf`: the final deck (added once we put the slides together)
+- `slides.pdf`: the final deck
